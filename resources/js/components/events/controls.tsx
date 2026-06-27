@@ -26,6 +26,9 @@ import { useEffect, useState } from 'react';
 /** A selected from–to date range (HeroUI/react-aria date values), or null when cleared. */
 export type DateRange = { start: DateValue; end: DateValue } | null;
 
+/** Shared left-rail width and right accent border for map/timeline filter sidebars. */
+export const FILTER_RAIL_CLASS = 'md:w-[360px] md:border-r-[3px] md:border-r-sky-500';
+
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

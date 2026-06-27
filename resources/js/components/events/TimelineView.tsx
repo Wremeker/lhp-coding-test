@@ -5,6 +5,7 @@ import {
     CategoryChips,
     DateRangeFilter,
     EventSearch,
+    FILTER_RAIL_CLASS,
     PriceFilter,
     RegisterModal,
 } from '@/components/events/controls';
@@ -236,7 +237,7 @@ export default function TimelineView() {
         <>
             <div className="flex min-h-0 flex-1 flex-col md:flex-row">
                 {/* LEFT RAIL — filters + month jump-to */}
-                <aside className="flex w-full flex-none flex-col border-b border-black/[0.07] bg-white md:w-[300px] md:overflow-y-auto md:border-r md:border-b-0">
+                <aside className={`flex w-full flex-none flex-col border-b border-black/[0.07] bg-white md:overflow-y-auto md:border-b-0 ${FILTER_RAIL_CLASS}`}>
                     <div className="p-[22px] pb-4">
                         <h1 className="mb-1 text-[22px] font-extrabold tracking-tight">
                             What's on

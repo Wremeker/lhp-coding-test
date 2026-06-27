@@ -7,6 +7,7 @@ import {
     CategoryChips,
     DateRangeFilter,
     EventSearch,
+    FILTER_RAIL_CLASS,
     PriceFilter,
     RegisterModal,
 } from '@/components/events/controls';
@@ -290,7 +291,7 @@ export default function MapView() {
         <>
             <div className="flex min-h-0 flex-1 flex-col md:flex-row">
                 {/* SIDEBAR */}
-                <aside className="order-2 flex min-h-0 w-full flex-1 flex-col border-t border-black/[0.07] bg-white md:order-none md:w-[392px] md:flex-none md:border-t-0 md:border-r">
+                <aside className={`order-2 flex min-h-0 w-full flex-1 flex-col border-t border-black/[0.07] bg-white md:order-none md:flex-none md:border-t-0 ${FILTER_RAIL_CLASS}`}>
                     <div className="border-b border-black/[0.06] p-5 pb-3.5">
                         <div className="mb-3.5 flex items-baseline justify-between">
                             <h1 className="text-[21px] font-extrabold tracking-tight">

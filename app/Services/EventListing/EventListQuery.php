@@ -47,12 +47,11 @@ class EventListQuery
 
         // A name search is selective on `name` but would have to fetch + filesort
         // every match to honour a global date order (≈1s for common words like
-        // "live", which match ~33k rows). Instead, search ranks by FULLTEXT
-        // relevance + offset paging, which lets the index return rows already
-        // sorted and stop at the limit (~110ms). Plain browsing keeps the date
-        // keyset.
+        // "live", which match ~33k rows). Instead, search just takes the first
+        // matches the FULLTEXT index yields and pages by offset, so the scan stops
+        // at the limit (~90ms). Plain browsing keeps the date keyset.
         if ($term !== null) {
-            return $this->paginateByRelevance($query, $term, $filters['cursor'] ?? null, $limit);
+            return $this->paginateByNameSearch($query, $term, $filters['cursor'] ?? null, $limit);
         }
 
         return $this->paginateByDate($query, $filters['cursor'] ?? null, $limit);
@@ -83,19 +82,20 @@ class EventListQuery
     }
 
     /**
-     * Relevance-sorted offset pagination — the name-search path.
+     * Offset pagination over FULLTEXT matches — the name-search path.
      *
      * @param  Builder<Event>  $query
      * @return array{data: Collection<int, Event>, next_cursor: ?string}
      */
-    private function paginateByRelevance(Builder $query, string $term, ?string $cursor, int $limit): array
+    private function paginateByNameSearch(Builder $query, string $term, ?string $cursor, int $limit): array
     {
-        // Natural-language FULLTEXT: MySQL returns matches already ordered by
-        // relevance (best first) straight from the index, so we add NO `ORDER BY`
-        // and the scan stops at the limit (~110ms). An explicit `ORDER BY MATCH(...)`
-        // would force a filesort over every match (~1s for "live"); a date order
-        // would too. Offset paging walks that relevance-ranked set.
-        $query->whereFullText('name', $term);
+        // Boolean mode supports the `+word*` prefix matching (search-as-you-type).
+        // We add NO `ORDER BY`: any sort (date or `MATCH(...)` relevance) forces a
+        // filesort over every match — ≈1s for a common prefix like "ann". Without
+        // it the index returns matches and the scan stops at the limit (~90ms). The
+        // order is the engine's internal one, which is stable enough for offset
+        // paging (already shift-prone on inserts).
+        $query->whereFullText('name', $term, ['mode' => 'boolean']);
 
         $offset = $this->decodeOffsetCursor($cursor);
 
@@ -183,9 +183,10 @@ class EventListQuery
     }
 
     /**
-     * Reduce a raw query to the bare words fed to a natural-language FULLTEXT
-     * search (e.g. "Climate Fest!" → "climate fest"). Returns null when there is
-     * nothing searchable so the caller falls back to date browsing.
+     * Turn a raw query into a safe FULLTEXT boolean expression: each word becomes
+     * a required prefix match (e.g. "Annual Found" → "+annual* +found*"), so the
+     * search matches as you type. Returns null when there is nothing searchable so
+     * the caller falls back to date browsing.
      */
     private function searchTerm(?string $name): ?string
     {
@@ -199,7 +200,7 @@ class EventListQuery
             return null;
         }
 
-        return implode(' ', $matches[0]);
+        return implode(' ', array_map(static fn (string $w) => '+'.$w.'*', $matches[0]));
     }
 
     /**

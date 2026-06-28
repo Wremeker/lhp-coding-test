@@ -6,7 +6,7 @@ import InputError from '@/components/input-error';
 import EventsLayout from '@/layouts/events-layout';
 import { CATS, type Category } from '@/data/events-api';
 import { index } from '@/routes/events';
-import { login } from '@/routes/login';
+import { login } from '@/routes';
 
 import type { Auth } from '@/types';
 

@@ -14,14 +14,14 @@ Each event should present the standard information you'd expect for something li
 ## Requirements
 
 - **Images** — events don't have images yet. Add support for them end to end, with
-  **two or more images per event**. You may reuse the same placeholder files, but the
-  images must be served **locally** (no external/hotlinked URLs).
+**two or more images per event**. You may reuse the same placeholder files, but the
+images must be served **locally** (no external/hotlinked URLs).
 - **Addresses** — events only carry a latitude/longitude. Turn that into a usable,
-  human-readable location.
+human-readable location.
 - **Date & time** — events are global. Display the time sensibly; how and where you handle
-  timezones is up to you.
+timezones is up to you.
 - **Filtering** — any style you like, but we should at least be able to **filter by date and
-  by location**.
+by location**.
 - **Tailwind** — use it for styling.
 - **Animations** — add them where they make sense; don't overdo it.
 
@@ -30,7 +30,7 @@ Each event should present the standard information you'd expect for something li
 - Let people register **interest / attendance** for an event (an attendee list).
 - When someone is added, **email them** to confirm they're on the list.
 - Send **reminder emails** as the event approaches — handle both **3 days before** and
-  **24 hours before** the event.
+**24 hours before** the event.
 
 ## Notes
 

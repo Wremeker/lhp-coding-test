@@ -27,6 +27,11 @@ class EventResource extends JsonResource
             'longitude' => $this->longitude,
             'city' => $this->city,
             'country' => $this->country,
+            'images' => $this->whenLoaded(
+                'images',
+                fn () => $this->images->pluck('path')->values()->all(),
+                [],
+            ),
         ];
     }
 }

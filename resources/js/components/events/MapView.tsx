@@ -11,11 +11,14 @@ import {
     PriceFilter,
     RegisterModal,
 } from '@/components/events/controls';
+import { EventCover } from '@/components/events/EventCover';
+import { EventTime } from '@/components/events/EventTime';
 import type { DateRange } from '@/components/events/controls';
 import {
     CATEGORY_KEYS,
     CATS,
     fmtLongISO,
+    fmtShortLocalDate,
     formatPrice,
     getInterest,
     locationLabel,
@@ -26,6 +29,7 @@ import {
 } from '@/data/events-api';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useEventFeed } from '@/hooks/use-event-feed';
+import { cn } from '@/lib/utils';
 
 /**
  * Event Map view — a full-bleed Leaflet map with a filterable sidebar and an
@@ -40,6 +44,12 @@ const CATEGORY_OPTIONS = CATEGORY_KEYS.map((c) => ({
     label: CATS[c].label,
     color: CATS[c].color,
 }));
+
+const MARKER_BASE =
+    'h-3 w-3 rounded-full border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,.35)] transition-transform duration-[180ms] ease-[cubic-bezier(.34,1.56,.64,1)] will-change-transform';
+const MARKER_SCALE = ['scale-100', 'scale-[1.55]', 'scale-[2]'] as const;
+const MARKER_SHADOW_SELECTED =
+    'shadow-[0_0_0_6px_rgba(14,165,233,.22),0_1px_4px_rgba(0,0,0,.35)]';
 
 export default function MapView() {
     // Raw inputs (debounced before they become query filters).
@@ -206,7 +216,7 @@ export default function MapView() {
                 className: '',
                 iconSize: [12, 12],
                 iconAnchor: [6, 6],
-                html: `<div class="cmarker" style="width:12px;height:12px;border-radius:50%;background:${e.catColor};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+                html: `<div class="${MARKER_BASE} ${MARKER_SCALE[0]}" style="background:${e.catColor}"></div>`,
             });
             const marker = L.marker([e.lat, e.lng], { icon }).addTo(map);
             marker.on('click', () => selectEvent(e.id));
@@ -231,14 +241,18 @@ export default function MapView() {
             el.style.zIndex = sel ? '1000' : hov ? '900' : '';
 
             if (inner) {
-                inner.style.transform = sel
-                    ? 'scale(2)'
-                    : hov
-                      ? 'scale(1.55)'
-                      : 'scale(1)';
-                inner.style.boxShadow = sel
-                    ? '0 0 0 6px rgba(14,165,233,.22), 0 1px 4px rgba(0,0,0,.35)'
-                    : '0 1px 4px rgba(0,0,0,.35)';
+                inner.classList.remove(...MARKER_SCALE, MARKER_SHADOW_SELECTED);
+                inner.classList.add(
+                    sel
+                        ? MARKER_SCALE[2]
+                        : hov
+                          ? MARKER_SCALE[1]
+                          : MARKER_SCALE[0],
+                );
+
+                if (sel) {
+                    inner.classList.add(MARKER_SHADOW_SELECTED);
+                }
             }
         });
     };
@@ -404,38 +418,41 @@ export default function MapView() {
                                         onClick={() => selectEvent(e.id)}
                                         onMouseEnter={() => setHoverId(e.id)}
                                         onMouseLeave={() => setHoverId(null)}
-                                        className="mb-1 flex cursor-pointer gap-3 rounded-2xl border-[1.5px] p-2.5 transition-all"
-                                        style={{
-                                            background: sel
-                                                ? 'rgba(14,165,233,.08)'
-                                                : hov
-                                                  ? '#f8fafc'
-                                                  : '#fff',
-                                            borderColor: sel
-                                                ? 'rgba(14,165,233,.55)'
-                                                : hov
-                                                  ? 'rgba(0,0,0,.1)'
-                                                  : 'transparent',
-                                        }}
+                                        className={cn(
+                                            'mb-1 flex cursor-pointer gap-3 rounded-2xl border-[1.5px] p-2.5 transition-all',
+                                            sel && 'border-sky-500/55 bg-sky-500/8',
+                                            !sel &&
+                                                hov &&
+                                                'border-black/10 bg-slate-50',
+                                            !sel &&
+                                                !hov &&
+                                                'border-transparent bg-white',
+                                        )}
                                     >
-                                        <div
-                                            className="relative h-16 w-16 flex-none overflow-hidden rounded-[11px] ring-1 ring-black/[0.04] ring-inset"
-                                            style={{ background: e.covers[0] }}
+                                        <EventCover
+                                            event={e}
+                                            className="h-16 w-16 flex-none rounded-[11px] ring-1 ring-black/[0.04] ring-inset"
                                         >
                                             <span className="absolute top-1.5 left-1.5 rounded-md bg-black/30 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase backdrop-blur-sm">
                                                 {e.catLabel}
                                             </span>
-                                        </div>
+                                        </EventCover>
                                         <div className="flex min-w-0 flex-1 flex-col justify-center">
                                             <div className="flex items-center gap-1.5">
                                                 <span
-                                                    className="text-[11.5px] font-bold"
-                                                    style={{ color: e.catColor }}
+                                                    className="text-[11.5px] font-bold text-[color:var(--cat-color)]"
+                                                    style={
+                                                        {
+                                                            '--cat-color':
+                                                                e.catColor,
+                                                        } as React.CSSProperties
+                                                    }
                                                 >
-                                                    {e.date}
+                                                    {fmtShortLocalDate(e.date)}
                                                 </span>
                                                 <span className="text-[11.5px] font-semibold text-zinc-400">
-                                                    · {e.time} UTC
+                                                    ·{' '}
+                                                    <EventTime event={e} />
                                                 </span>
                                                 <span className="ml-auto text-[11.5px] font-bold text-zinc-700">
                                                     {formatPrice(e.price)}
@@ -503,19 +520,19 @@ export default function MapView() {
                     {selected && (
                         <div
                             key={selected.id}
-                            className="evt-pop absolute right-3 bottom-[22px] left-3 z-[600] overflow-hidden rounded-[20px] bg-white shadow-2xl sm:right-auto sm:left-5 sm:w-[344px]"
+                            className="animate-evt-pop-in absolute right-3 bottom-[22px] left-3 z-[600] overflow-hidden rounded-[20px] bg-white shadow-2xl sm:right-auto sm:left-5 sm:w-[344px]"
                         >
-                            <div
-                                className="relative h-[150px]"
-                                style={{
-                                    background:
-                                        selected.covers[
-                                            Math.min(
-                                                galleryIndex,
-                                                selected.covers.length - 1,
-                                            )
-                                        ],
-                                }}
+                            <EventCover
+                                event={selected}
+                                index={
+                                    selected.images.length > 0
+                                        ? Math.min(
+                                              galleryIndex,
+                                              selected.images.length - 1,
+                                          )
+                                        : 0
+                                }
+                                className="h-[150px]"
                             >
                                 <Button
                                     isIconOnly
@@ -529,43 +546,41 @@ export default function MapView() {
                                 <span className="absolute top-3.5 left-3.5 rounded-lg bg-black/30 px-2.5 py-1 text-[11px] font-extrabold tracking-wider text-white uppercase backdrop-blur-sm">
                                     {selected.catLabel}
                                 </span>
-                                {selected.covers.length > 1 && (
+                                {selected.images.length > 1 && (
                                     <div className="absolute right-0 bottom-2.5 left-0 flex justify-center gap-1.5">
-                                        {selected.covers.map((_, i) => (
+                                        {selected.images.map((_, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() =>
                                                     setGalleryIndex(i)
                                                 }
                                                 aria-label={`Image ${i + 1}`}
-                                                className="h-[7px] rounded-full transition-all"
-                                                style={{
-                                                    width:
-                                                        i === galleryIndex
-                                                            ? '20px'
-                                                            : '7px',
-                                                    background:
-                                                        i === galleryIndex
-                                                            ? '#fff'
-                                                            : 'rgba(255,255,255,.5)',
-                                                }}
+                                                className={cn(
+                                                    'h-[7px] rounded-full transition-all',
+                                                    i === galleryIndex
+                                                        ? 'w-5 bg-white'
+                                                        : 'w-[7px] bg-white/50',
+                                                )}
                                             />
                                         ))}
                                     </div>
                                 )}
-                            </div>
+                            </EventCover>
                             <div className="px-[18px] pt-4 pb-[18px]">
                                 <h2 className="mb-2 text-xl leading-tight font-extrabold tracking-tight">
                                     {selected.title}
                                 </h2>
                                 <div className="mb-1.5 flex items-center gap-2 text-[13.5px] font-bold text-sky-700">
                                     <Calendar className="h-[15px] w-[15px]" />
-                                    {fmtLongISO(selected.startISO)}
+                                    {fmtLongISO(selected.startISO, selected.timezone)}
                                 </div>
                                 <div className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold text-zinc-600">
                                     <Clock className="h-[15px] w-[15px] text-zinc-400" />
-                                    {selected.time}{' '}
-                                    <span className="text-zinc-400">·</span> UTC
+                                    <EventTime
+                                        event={selected}
+                                        showUserHint
+                                        hintClassName="text-zinc-400"
+                                    />
                                 </div>
                                 <div className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold text-zinc-600">
                                     <MapPin className="h-[15px] w-[15px] text-zinc-400" />

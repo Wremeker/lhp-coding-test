@@ -37,24 +37,9 @@ export default function Index() {
                     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
                     rel="stylesheet"
                 />
-                <style>{`
-                    .cmarker { transition: transform .18s cubic-bezier(.34,1.56,.64,1); will-change: transform; }
-                    .leaflet-container { font-family: 'Manrope', sans-serif; background: #eef1f4; }
-                    .leaflet-control-attribution { font-size: 10px; background: rgba(255,255,255,.7); }
-                    @keyframes evt-pop-in { from { transform: translateY(14px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
-                    @keyframes evt-ring { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.45);} 70%{box-shadow:0 0 0 14px rgba(22,163,74,0);} 100%{box-shadow:0 0 0 0 rgba(22,163,74,0);} }
-                    @keyframes evt-reveal-up { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
-                    .evt-pop { animation: evt-pop-in .35s cubic-bezier(.34,1.3,.5,1); }
-                    .evt-ring { animation: evt-ring 1.4s ease 1; }
-                    .evt-reveal { animation: evt-reveal-up .55s cubic-bezier(.2,.7,.3,1) both; }
-                    .evt-card:hover { box-shadow: 0 16px 38px rgba(0,0,0,.12); transform: translateY(-3px); }
-                `}</style>
             </Head>
 
-            <div
-                className="relative flex h-screen flex-col overflow-hidden bg-zinc-100 text-zinc-900"
-                style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}
-            >
+            <div className="relative flex h-screen flex-col overflow-hidden bg-zinc-100 font-manrope text-zinc-900">
                 {/* VIEW TOGGLE (HeroUI) — floats over the content, top-right */}
                 <ToggleButtonGroup
                     selectionMode="single"

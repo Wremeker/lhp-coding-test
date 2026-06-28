@@ -38,6 +38,7 @@ class EventListQuery
 
         $query = Event::query()
             ->select(self::COLUMNS)
+            ->with(['images' => fn ($q) => $q->select('event_id', 'path', 'sort_order')])
             ->whereIn('status', Event::PUBLIC_STATUSES);
 
         $this->applyDateFilter($query, $filters);

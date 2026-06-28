@@ -68,8 +68,7 @@ it('shows an event detail page with its payload', function () {
         );
 });
 
-it('renders the two visualization pages and the dashboard without authentication', function () {
+it('renders the two visualization pages without authentication', function () {
     $this->get(route('events.visual1'))->assertOk();
     $this->get(route('events.visual2'))->assertOk();
-    $this->get(route('dashboard'))->assertOk();
 });

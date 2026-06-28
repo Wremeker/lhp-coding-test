@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, ListOrdered } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, ListOrdered, Settings2 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import {
     SIDEBAR_WIDTH,
@@ -11,20 +11,7 @@ import NavFooter from '@/components/nav-footer';
 import NavMain from '@/components/nav-main';
 import NavUser from '@/components/nav-user';
 import { cn } from '@/lib/utils';
-import { dashboard } from '@/routes';
-
-const mainNavItems = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Events',
-        href: '/events',
-        icon: ListOrdered,
-    },
-];
+import type { Auth } from '@/types';
 
 const footerNavItems = [
     {
@@ -40,6 +27,25 @@ const footerNavItems = [
 ];
 
 function SidebarPanel({ className }: { className?: string }) {
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const mainNavItems = [
+        {
+            title: 'Browse events',
+            href: '/events',
+            icon: ListOrdered,
+        },
+        ...(auth.user?.is_admin
+            ? [
+                  {
+                      title: 'Manage events',
+                      href: '/admin/events',
+                      icon: Settings2,
+                  },
+              ]
+            : []),
+    ];
+
     return (
         <div
             className={cn(
@@ -49,7 +55,7 @@ function SidebarPanel({ className }: { className?: string }) {
         >
             <div className="border-b border-sidebar-border p-2">
                 <Link
-                    href={dashboard()}
+                    href="/events"
                     className="flex items-center gap-2 rounded-md p-2 hover:bg-sidebar-accent"
                 >
                     <AppLogo />

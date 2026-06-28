@@ -16,8 +16,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name' => 'Test User',
+            'name' => 'Admin User',
             'email' => 'test@example.com',
+            'is_admin' => true,
         ]);
 
         // Defaults to 1,250,000 events (≈2.5 GB; ~3s first listing load on a

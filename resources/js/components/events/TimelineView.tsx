@@ -9,6 +9,8 @@ import {
     PriceFilter,
     RegisterModal,
 } from '@/components/events/controls';
+import { EventCover } from '@/components/events/EventCover';
+import { EventTime } from '@/components/events/EventTime';
 import type { DateRange } from '@/components/events/controls';
 import {
     CATEGORY_KEYS,
@@ -26,6 +28,7 @@ import {
 } from '@/data/events-api';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useEventFeed } from '@/hooks/use-event-feed';
+import { cn } from '@/lib/utils';
 
 /**
  * Event Timeline view — a vertical, month-grouped timeline with a sticky month
@@ -323,28 +326,28 @@ export default function TimelineView() {
                                 <button
                                     key={g.key}
                                     onClick={() => jumpTo(g.key)}
-                                    className="mb-0.5 flex w-full items-center justify-between rounded-[10px] px-3 py-[9px] transition-colors"
-                                    style={{
-                                        background: active
-                                            ? 'rgba(14,165,233,.1)'
-                                            : 'transparent',
-                                    }}
+                                    className={cn(
+                                        'mb-0.5 flex w-full items-center justify-between rounded-[10px] px-3 py-[9px] transition-colors',
+                                        active
+                                            ? 'bg-sky-500/10'
+                                            : 'bg-transparent',
+                                    )}
                                 >
                                     <span
-                                        className="flex items-center gap-[9px] text-[13.5px] font-bold"
-                                        style={{
-                                            color: active
-                                                ? '#0284c7'
-                                                : '#3f3f46',
-                                        }}
+                                        className={cn(
+                                            'flex items-center gap-[9px] text-[13.5px] font-bold',
+                                            active
+                                                ? 'text-sky-700'
+                                                : 'text-zinc-600',
+                                        )}
                                     >
                                         <span
-                                            className="h-[7px] w-[7px] rounded-full transition-all"
-                                            style={{
-                                                background: active
-                                                    ? '#0ea5e9'
-                                                    : '#d4d4d8',
-                                            }}
+                                            className={cn(
+                                                'h-[7px] w-[7px] rounded-full transition-all',
+                                                active
+                                                    ? 'bg-sky-500'
+                                                    : 'bg-zinc-300',
+                                            )}
                                         />
                                         {g.month} {g.year}
                                     </span>
@@ -425,10 +428,12 @@ export default function TimelineView() {
                                         return (
                                             <div
                                                 key={e.id}
-                                                className="evt-reveal mb-[22px] flex items-stretch gap-3 sm:gap-5"
-                                                style={{
-                                                    animationDelay: `${Math.min(idx, 6) * 85}ms`,
-                                                }}
+                                                className="animate-evt-reveal-up mb-[22px] flex items-stretch gap-3 [animation-delay:var(--reveal-delay)] sm:gap-5"
+                                                style={
+                                                    {
+                                                        '--reveal-delay': `${Math.min(idx, 6) * 85}ms`,
+                                                    } as React.CSSProperties
+                                                }
                                             >
                                                 {/* spine */}
                                                 <div className="relative flex w-[58px] flex-none flex-col items-center">
@@ -441,24 +446,22 @@ export default function TimelineView() {
                                                             {dow}
                                                         </div>
                                                         <div
-                                                            className="mx-auto mt-[9px] h-[13px] w-[13px] rounded-full border-[3px] border-white"
-                                                            style={{
-                                                                background:
-                                                                    e.catColor,
-                                                                boxShadow: `0 0 0 2px ${e.catColor}`,
-                                                            }}
+                                                            className="mx-auto mt-[9px] h-[13px] w-[13px] rounded-full border-[3px] border-white bg-[color:var(--cat-color)] shadow-[0_0_0_2px_var(--cat-color)]"
+                                                            style={
+                                                                {
+                                                                    '--cat-color':
+                                                                        e.catColor,
+                                                                } as React.CSSProperties
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
 
                                                 {/* card */}
-                                                <div className="evt-card flex min-w-0 flex-1 flex-col overflow-hidden rounded-[20px] border border-black/[0.05] bg-white shadow-[0_4px_18px_rgba(0,0,0,.06)] transition-all sm:flex-row">
-                                                    <div
-                                                        className="relative h-28 w-full flex-none sm:h-auto sm:w-[228px]"
-                                                        style={{
-                                                            background:
-                                                                e.covers[0],
-                                                        }}
+                                                <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[20px] border border-black/[0.05] bg-white shadow-[0_4px_18px_rgba(0,0,0,.06)] transition-all hover:-translate-y-[3px] hover:shadow-[0_16px_38px_rgba(0,0,0,.12)] sm:flex-row">
+                                                    <EventCover
+                                                        event={e}
+                                                        className="h-28 w-full flex-none sm:h-auto sm:w-[228px]"
                                                     >
                                                         <span className="absolute top-3.5 left-3.5 rounded-lg bg-black/30 px-2.5 py-1 text-[10.5px] font-extrabold tracking-wider text-white uppercase backdrop-blur-sm">
                                                             {e.catLabel}
@@ -466,17 +469,15 @@ export default function TimelineView() {
                                                         <span className="absolute right-3.5 bottom-3 rounded-lg bg-black/30 px-2.5 py-1 text-[11px] font-extrabold text-white backdrop-blur-sm">
                                                             {formatPrice(e.price)}
                                                         </span>
-                                                    </div>
+                                                    </EventCover>
                                                     <div className="flex min-w-0 flex-1 flex-col p-[20px_22px]">
-                                                        <div className="mb-[7px] flex items-center gap-2 text-[13px] font-bold text-sky-700">
+                                                        <div className="mb-[7px] flex flex-wrap items-center gap-2 text-[13px] font-bold text-sky-700">
                                                             <Clock className="h-[15px] w-[15px]" />
-                                                            {e.time}{' '}
-                                                            <span className="text-slate-300">
-                                                                ·
-                                                            </span>{' '}
-                                                            <span className="font-semibold text-zinc-500">
-                                                                UTC
-                                                            </span>
+                                                            <EventTime
+                                                                event={e}
+                                                                showUserHint
+                                                                hintClassName="font-normal text-zinc-400"
+                                                            />
                                                         </div>
                                                         <h3 className="mb-[7px] text-[21px] leading-tight font-extrabold tracking-tight">
                                                             {e.title}

@@ -42,7 +42,15 @@ Starts the PHP server, queue worker, log tailer, and Vite together. Open http://
 
 Emails use the `log` mailer by default (`MAIL_MAILER=log`), so confirmations/reminders are written to `storage/logs/laravel.log`.
 
-## Tests & linting
+## Decisions
+
+### Date & time / timezones
+
+- **Storage:** `start_at` / `end_at` are UTC instants (ISO-8601 over the API). Laravel app timezone is `UTC`; seed data uses `gmdate`.
+- **Display:** We resolve the venue IANA zone from coordinates (`tz-lookup`) and format date/time in that zone via `Intl`. A concert at 19:30 in Berlin shows as 19:30 CET, not shifted by the viewer's browser clock.
+- **Viewer hint:** When the browser timezone differs from the venue, detail views add a secondary line like `(2:30 PM your time)`.
+- **Filtering:** Date-range filters are sent as calendar dates and matched against UTC day boundaries on the server. That is a deliberate trade-off for a simple indexed query; edge cases around midnight in far-flung zones may appear on the adjacent calendar day in filters. A production follow-up would store `timezone` + `start_date_local` at ingest time and filter on the local date column.
+
 
 ```bash
 composer test   # pint + phpstan + pest

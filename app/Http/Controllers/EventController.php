@@ -27,10 +27,21 @@ class EventController extends Controller
 
     public function show(Event $event): Response
     {
-        $event->load('user');
+        $event->load(['user', 'images']);
 
         return Inertia::render('Events/Show', [
-            'event' => $event,
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'type' => $event->type,
+                'status' => $event->status,
+                'created_time' => $event->created_time,
+                'latitude' => $event->latitude,
+                'longitude' => $event->longitude,
+                'payload' => $event->payload,
+                'images' => $event->images->pluck('path')->values()->all(),
+                'can_upload' => auth()->id() === $event->user_id,
+            ],
         ]);
     }
 }

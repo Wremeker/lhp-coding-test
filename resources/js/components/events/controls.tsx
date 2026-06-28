@@ -22,6 +22,10 @@ import {
     X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { EventCover } from '@/components/events/EventCover';
+import { EventTime } from '@/components/events/EventTime';
+import { fmtShortLocalDate } from '@/data/events-api';
+import { cn } from '@/lib/utils';
 
 /** A selected from–to date range (HeroUI/react-aria date values), or null when cleared. */
 export type DateRange = { start: DateValue; end: DateValue } | null;
@@ -48,9 +52,15 @@ export interface RegisterableEvent {
     id: string;
     title: string;
     date: string;
+    time: string;
+    timezoneLabel: string;
+    userTimeHint?: string | null;
+    category: import('@/data/events-api').Category;
+    catLabel: string;
+    catColor: string;
     city: string | null;
     country: string | null;
-    covers: string[];
+    images: string[];
 }
 
 /**
@@ -250,16 +260,23 @@ export function CategoryChips({
                         variant="outline"
                         onPress={() => onToggle(o.value)}
                         aria-pressed={on}
-                        className="rounded-full px-3 text-xs font-bold"
-                        style={{
-                            borderColor: on ? o.color : 'rgba(0,0,0,.12)',
-                            background: on ? o.color : '#fff',
-                            color: on ? '#fff' : '#71717a',
-                        }}
+                        className={cn(
+                            'rounded-full border px-3 text-xs font-bold',
+                            on
+                                ? 'border-[color:var(--chip-color)] bg-[color:var(--chip-color)] text-white'
+                                : 'border-black/12 bg-white text-zinc-500',
+                        )}
+                        style={
+                            { '--chip-color': o.color } as React.CSSProperties
+                        }
                     >
                         <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ background: on ? '#fff' : o.color }}
+                            className={cn(
+                                'h-2 w-2 rounded-full',
+                                on
+                                    ? 'bg-white'
+                                    : 'bg-[color:var(--chip-color)]',
+                            )}
                         />
                         {o.label}
                     </Button>
@@ -395,10 +412,10 @@ export function RegisterModal({
                 }}
             >
                 <Modal.Container placement="center">
-                    <Modal.Dialog className="evt-pop w-[420px] max-w-full overflow-hidden rounded-[22px] bg-white p-0 shadow-2xl">
+                    <Modal.Dialog className="animate-evt-pop-in w-[420px] max-w-full overflow-hidden rounded-[22px] bg-white p-0 shadow-2xl">
                         {event && submitted ? (
                             <div className="px-8 py-11 text-center">
-                                <div className="evt-ring mx-auto mb-[18px] flex h-[66px] w-[66px] items-center justify-center rounded-full bg-green-100">
+                                <div className="animate-evt-ring mx-auto mb-[18px] flex h-[66px] w-[66px] items-center justify-center rounded-full bg-green-100">
                                     <Check className="h-[34px] w-[34px] text-green-600" />
                                 </div>
                                 <h2 className="mb-2 text-[23px] font-extrabold tracking-tight">
@@ -427,9 +444,9 @@ export function RegisterModal({
                         ) : (
                             event && (
                                 <div>
-                                    <div
-                                        className="relative h-[90px]"
-                                        style={{ background: event.covers[0] }}
+                                    <EventCover
+                                        event={event}
+                                        className="h-[90px]"
                                     >
                                         <Button
                                             isIconOnly
@@ -440,7 +457,7 @@ export function RegisterModal({
                                         >
                                             <X className="h-[15px] w-[15px]" />
                                         </Button>
-                                    </div>
+                                    </EventCover>
                                     <div className="px-[26px] pt-[22px] pb-[26px]">
                                         <div className="mb-1 text-xs font-extrabold tracking-wider text-sky-500 uppercase">
                                             Register interest
@@ -449,7 +466,8 @@ export function RegisterModal({
                                             {event.title}
                                         </h2>
                                         <p className="mb-5 text-[13px] font-semibold text-zinc-400">
-                                            {fmtShort(event.date)} ·{' '}
+                                            {fmtShortLocalDate(event.date)} ·{' '}
+                                            <EventTime event={event} /> ·{' '}
                                             {[event.city, event.country]
                                                 .filter(Boolean)
                                                 .join(', ') || 'Location TBC'}
